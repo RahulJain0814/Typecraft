@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typecraft — Timed typing practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F8F5F0;--cream-mid:#F0EBE3;--cream-dark:#E4DDD4;
+  --ink:#1A1714;--ink-mid:#4A4540;--ink-light:#8C857D;--ink-ghost:#C4BCB4;
+  --sage:#6B8F71;--sage-light:#EBF2EC;--sage-mid:#D0E4D2;
+  --rust:#C0614A;--rust-light:#FAF0EE;
+  --amber:#B07D2A;--amber-light:#FDF6E7;
+  --indigo:#5B6FA8;--indigo-light:#EEF0FA;--indigo-mid:#CDD2EE;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--serif:'DM Serif Display',serif;
+  --r:12px;--rsm:7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--cream);color:var(--ink);min-height:100vh;font-size:16px;line-height:1.6}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,245,240,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--cream-dark);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--serif);font-size:20px;color:var(--ink);letter-spacing:-.01em}
+.nav-logo span{color:var(--sage)}
+.nav-hint{font-size:13px;color:var(--ink-light);font-weight:300}
+
+main{max-width:720px;margin:0 auto;padding:76px 1.5rem 3rem}
+
+.hero{text-align:center;padding:1.75rem 0 1.5rem}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--sage);background:var(--sage-light);padding:5px 14px;border-radius:99px;margin-bottom:1rem}
+.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sage);display:inline-block}
+.hero h1{font-family:var(--serif);font-size:clamp(1.75rem,4.5vw,2.5rem);line-height:1.15;letter-spacing:-.02em;margin-bottom:.65rem}
+.hero h1 em{font-style:italic;color:var(--sage)}
+.hero-sub{font-size:15px;color:var(--ink-mid);font-weight:300;max-width:420px;margin:0 auto;line-height:1.65}
+
+.screen{display:none}.screen.active{display:block}
+.card{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem}
+
+/* ── MODE TABS (upload vs quick practice) ── */
+.home-tabs{display:flex;gap:0;border:1px solid var(--cream-dark);border-radius:var(--r);overflow:hidden;margin-bottom:1rem;background:var(--cream-mid)}
+.home-tab{flex:1;padding:11px 16px;font-size:14px;font-weight:500;font-family:var(--sans);cursor:pointer;border:none;background:transparent;color:var(--ink-light);transition:background .15s,color .15s;text-align:center;display:flex;align-items:center;justify-content:center;gap:7px}
+.home-tab:first-child{border-right:1px solid var(--cream-dark)}
+.home-tab.active{background:#fff;color:var(--ink)}
+.home-tab .tab-icon{font-size:16px}
+
+/* upload zone */
+.upload-zone{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--cream-dark);border-radius:var(--rsm);padding:13px 16px;cursor:pointer;background:var(--cream);transition:border-color .2s,background .2s}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--sage);background:var(--sage-light)}
+.upload-zone input{display:none}
+.uz-icon{font-size:20px;flex-shrink:0}
+.uz-title{font-size:14px;font-weight:500;color:var(--ink)}
+.uz-sub{font-size:12px;color:var(--ink-light);margin-top:1px}
+.format-pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.pill{font-size:10px;font-weight:500;letter-spacing:.04em;background:var(--cream-dark);color:var(--ink-mid);border-radius:99px;padding:2px 8px}
+
+.or-line{text-align:center;position:relative;font-size:12px;color:var(--ink-ghost);letter-spacing:.05em;text-transform:uppercase;margin:1rem 0}
+.or-line::before,.or-line::after{content:'';position:absolute;top:50%;width:calc(50% - 28px);height:1px;background:var(--cream-dark)}
+.or-line::before{left:0}.or-line::after{right:0}
+
+textarea.paste-box{width:100%;min-height:85px;resize:vertical;border:1px solid var(--cream-dark);border-radius:var(--rsm);padding:10px 12px;font-size:14px;font-family:var(--sans);background:var(--cream);color:var(--ink);transition:border-color .15s;line-height:1.6}
+textarea.paste-box:focus{outline:none;border-color:var(--sage)}
+textarea.paste-box::placeholder{color:var(--ink-ghost)}
+
+/* ── QUICK PRACTICE panel ── */
+.qp-panel{display:none}
+.qp-panel.visible{display:block}
+.qp-intro{font-size:14px;color:var(--ink-mid);margin-bottom:1.25rem;line-height:1.6}
+
+.diff-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.diff-card{border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:12px 10px;cursor:pointer;background:#fff;text-align:center;transition:border-color .15s,background .15s}
+.diff-card:hover{border-color:var(--indigo-mid);background:var(--indigo-light)}
+.diff-card.active{border-color:var(--indigo);background:var(--indigo-light)}
+.diff-icon{font-size:22px;margin-bottom:5px}
+.diff-title{font-size:13px;font-weight:500;color:var(--ink)}
+.diff-desc{font-size:11px;color:var(--ink-light);margin-top:2px;line-height:1.4}
+
+.qp-settings{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.qp-group{}
+.qp-group .sec-label{margin-bottom:8px}
+.qp-time-row{display:flex;gap:6px;flex-wrap:wrap}
+.qp-time-btn{border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:7px 12px;cursor:pointer;background:#fff;font-size:13px;font-weight:500;font-family:var(--sans);color:var(--ink-mid);transition:border-color .15s,background .15s}
+.qp-time-btn:hover{border-color:var(--indigo-mid);background:var(--indigo-light)}
+.qp-time-btn.active{border-color:var(--indigo);background:var(--indigo-light);color:var(--indigo)}
+
+.qp-len-row{display:flex;gap:6px;flex-wrap:wrap}
+.qp-len-btn{border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:7px 12px;cursor:pointer;background:#fff;font-size:13px;font-weight:500;font-family:var(--sans);color:var(--ink-mid);transition:border-color .15s,background .15s}
+.qp-len-btn:hover{border-color:var(--indigo-mid);background:var(--indigo-light)}
+.qp-len-btn.active{border-color:var(--indigo);background:var(--indigo-light);color:var(--indigo)}
+
+.qp-preview-wrap{background:var(--cream);border:1px solid var(--cream-dark);border-radius:var(--rsm);padding:12px 14px;margin-bottom:1rem;min-height:56px}
+.qp-preview-label{font-size:11px;color:var(--ink-ghost);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.qp-preview-text{font-family:var(--mono);font-size:13px;color:var(--ink-mid);line-height:1.6;word-break:break-word}
+
+.qp-actions{display:flex;gap:8px;align-items:center}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:var(--rsm);font-size:14px;font-family:var(--sans);cursor:pointer;transition:all .15s;font-weight:500;padding:9px 18px;border:none}
+.btn-secondary{background:transparent;color:var(--ink-mid);border:1px solid var(--cream-dark)}
+.btn-secondary:hover{background:var(--cream-mid);border-color:var(--ink-ghost)}
+.btn-sage{background:var(--sage);color:#fff}
+.btn-sage:hover{background:#5a7d60}
+.btn-sage:disabled{background:var(--sage-mid);cursor:not-allowed;color:var(--sage)}
+.btn-indigo{background:var(--indigo);color:#fff}
+.btn-indigo:hover{background:#4a5c94}
+
+.sec-label{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-light);margin-bottom:9px}
+.error-box{background:var(--rust-light);border:1px solid #f0c4bc;border-radius:var(--rsm);padding:10px 14px;font-size:13px;color:var(--rust);display:flex;align-items:center;gap:8px;margin-top:10px}
+
+/* typing mode grid */
+.mode-section{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--cream-dark)}
+.mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.mode-card{border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:9px 13px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
+.mode-card:hover{border-color:var(--sage-mid);background:var(--sage-light)}
+.mode-card.active{border-color:var(--sage);background:var(--sage-light)}
+.mc-dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ink-ghost);display:inline-block;margin-right:7px;vertical-align:middle;background:transparent;transition:all .15s;flex-shrink:0}
+.mode-card.active .mc-dot{border-color:var(--sage);background:var(--sage)}
+.mc-title{font-size:13px;font-weight:500;color:var(--ink)}
+.mc-desc{font-size:11px;color:var(--ink-light);margin-top:2px;padding-left:20px;line-height:1.45}
+
+/* loading */
+.loading-wrap{text-align:center;padding:3rem 2rem}
+.spinner{width:36px;height:36px;border:2.5px solid var(--cream-dark);border-top-color:var(--sage);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.loading-sub{font-size:13px;color:var(--ink-light)}
+
+/* select screen */
+.select-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.select-header h2{font-family:var(--serif);font-size:22px;color:var(--ink);letter-spacing:-.01em}
+.select-header p{font-size:13px;color:var(--ink-light);margin-top:2px}
+.file-chip{display:inline-flex;align-items:center;gap:8px;background:var(--cream-mid);border:1px solid var(--cream-dark);border-radius:var(--rsm);padding:7px 12px;font-size:13px;margin-bottom:1rem}
+.fc-name{font-weight:500;color:var(--ink)}.fc-meta{color:var(--ink-light)}
+.hint-strip{background:var(--sage-light);border:1px solid var(--sage-mid);border-radius:var(--rsm);padding:9px 14px;font-size:13px;color:var(--sage);display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:.75rem;flex-wrap:wrap}
+.count-tag{margin-left:auto;font-size:12px;color:var(--ink-light)}
+.chunks-list{display:flex;flex-direction:column;gap:7px}
+.chunk-card{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--r);padding:.85rem 1.1rem;cursor:pointer;transition:border-color .15s,background .1s;position:relative;overflow:hidden}
+.chunk-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background .15s}
+.chunk-card:hover{border-color:var(--sage-mid);background:var(--sage-light)}
+.chunk-card:hover::before{background:var(--sage-mid)}
+.chunk-card.selected{border-color:var(--sage);background:var(--sage-light)}
+.chunk-card.selected::before{background:var(--sage)}
+.ch-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ch-num{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-light)}
+.ch-meta{font-size:12px;color:var(--ink-ghost)}
+.ch-preview{font-size:13px;color:var(--ink-mid);line-height:1.55}
+.ch-check{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:20px;height:20px;background:var(--sage);border-radius:50%;display:none;align-items:center;justify-content:center}
+.ch-check svg{width:11px;height:11px;stroke:#fff;stroke-width:2.5;fill:none}
+.chunk-card.selected .ch-check{display:flex}
+.chunk-card.selected .ch-preview{padding-right:28px}
+
+/* time selector */
+.time-section{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--cream-dark)}
+.time-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:.5rem}
+.time-btn{border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:10px 6px;cursor:pointer;background:#fff;text-align:center;transition:border-color .15s,background .15s}
+.time-btn:hover{border-color:var(--sage-mid);background:var(--sage-light)}
+.time-btn.active{border-color:var(--sage);background:var(--sage-light)}
+.t-val{font-size:20px;font-weight:500;color:var(--ink);line-height:1}
+.t-unit{font-size:11px;color:var(--ink-light);margin-top:2px}
+.time-note{font-size:12px;color:var(--ink-light);margin-top:6px}
+.start-bar{display:flex;align-items:center;gap:12px;margin-top:1.25rem;flex-wrap:wrap}
+.sel-label{font-size:13px;color:var(--ink-light)}
+
+/* practice screen */
+.practice-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:8px}
+.logo-sm{font-family:var(--serif);font-size:18px;color:var(--ink)}
+.logo-sm span{color:var(--sage)}
+
+/* timer ring */
+.timer-row{display:flex;align-items:center;gap:20px;margin-bottom:1rem;flex-wrap:wrap}
+.timer-ring-outer{position:relative;width:88px;height:88px;flex-shrink:0}
+.timer-ring-outer svg{transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--cream-dark);stroke-width:5}
+.ring-fill{fill:none;stroke:var(--sage);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .5s linear,stroke .3s}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-secs{font-family:var(--serif);font-size:24px;color:var(--ink);line-height:1}
+.ring-lbl{font-size:9px;color:var(--ink-light);letter-spacing:.06em;text-transform:uppercase;margin-top:1px}
+.live-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;flex:1;min-width:0}
+.stat-box{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rsm);padding:8px 10px;text-align:center}
+.sb-lbl{font-size:10px;color:var(--ink-light);letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+.sb-val{font-size:20px;font-weight:500;color:var(--ink);line-height:1}
+.sb-unit{font-size:10px;color:var(--ink-ghost)}
+
+.prog-bar-wrap{height:3px;background:var(--cream-dark);border-radius:99px;margin-bottom:.85rem;overflow:hidden}
+.prog-bar-fill{height:100%;background:var(--sage);border-radius:99px;transition:width .4s linear}
+
+.passage-meta{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:7px;flex-wrap:wrap}
+.p-badge{background:var(--cream-mid);border:1px solid var(--cream-dark);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--ink-mid)}
+.mode-chip{background:var(--sage-light);border:1px solid var(--sage-mid);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--sage)}
+.time-chip{background:var(--amber-light);border:1px solid #e8c97a;border-radius:99px;padding:2px 10px;font-size:12px;color:var(--amber)}
+.qp-chip{background:var(--indigo-light);border:1px solid var(--indigo-mid);border-radius:99px;padding:2px 10px;font-size:12px;color:var(--indigo)}
+
+/* text display */
+.text-display{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--r);padding:1rem 1.25rem;font-family:var(--mono);font-size:15px;line-height:1.95;margin-bottom:.85rem;user-select:none;height:175px;overflow-y:auto;overflow-x:hidden;word-break:break-word;white-space:pre-wrap}
+.c-done{color:var(--sage)}
+.c-wrong{color:var(--rust);background:var(--rust-light);border-radius:2px}
+.c-cur{border-bottom:2px solid var(--ink);animation:blink 1s step-end infinite}
+.c-pending{color:var(--ink-ghost)}
+@keyframes blink{50%{border-color:transparent}}
+
+textarea#typing-box{width:100%;height:50px;resize:none;border:1.5px solid var(--cream-dark);border-radius:var(--rsm);padding:13px 15px;font-size:15px;font-family:var(--mono);background:#fff;color:var(--ink);transition:border-color .15s}
+textarea#typing-box:focus{outline:none;border-color:var(--sage)}
+textarea#typing-box:disabled{background:var(--cream);color:var(--ink-ghost);cursor:not-allowed}
+.time-up-banner{background:var(--amber-light);border:1px solid #e8c97a;border-radius:var(--rsm);padding:10px 16px;font-size:14px;color:var(--amber);font-weight:500;text-align:center;margin-bottom:.75rem;display:none}
+.key-hints{font-size:12px;color:var(--ink-ghost);margin-top:7px;display:flex;gap:14px;flex-wrap:wrap}
+kbd{background:var(--cream-mid);border:1px solid var(--cream-dark);border-radius:4px;padding:1px 6px;font-size:11px;font-family:var(--mono);color:var(--ink-mid)}
+.practice-actions{display:flex;gap:8px;margin-top:.9rem;flex-wrap:wrap}
+
+/* result screen */
+.result-wrap{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--r);padding:2.25rem 1.75rem;text-align:center}
+.result-wpm{font-family:var(--serif);font-size:76px;color:var(--ink);line-height:1}
+.result-wpm-lbl{font-size:14px;color:var(--ink-light);margin-top:4px;margin-bottom:1.25rem}
+.result-badges{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap}
+.rbadge{border-radius:99px;padding:3px 13px;font-size:12px;font-weight:500}
+.rb-time{background:var(--amber-light);color:var(--amber);border:1px solid #e8c97a}
+.rb-mode{background:var(--cream-mid);color:var(--ink-mid);border:1px solid var(--cream-dark)}
+.rb-qp{background:var(--indigo-light);color:var(--indigo);border:1px solid var(--indigo-mid)}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:1.5rem}
+.verdict-box{margin-bottom:1.5rem;padding:1rem 1.25rem;background:var(--cream);border-radius:var(--rsm);text-align:left}
+.verdict-lbl{font-size:11px;color:var(--ink-light);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.verdict-text{font-size:14px;color:var(--ink-mid);line-height:1.65}
+.result-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.breakdown-section{margin-top:1.5rem;text-align:left}
+.breakdown-title{font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.75rem}
+.breakdown-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:7px}
+.bk-card{background:#fff;border:1px solid var(--cream-dark);border-radius:var(--rsm);padding:8px 10px;text-align:center}
+.bk-char{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.bk-acc{font-size:12px;font-weight:500}
+.bk-count{font-size:10px;color:var(--ink-ghost);margin-top:1px}
+
+footer{text-align:center;padding:2rem 1rem 1.5rem;font-size:12px;color:var(--ink-ghost);border-top:1px solid var(--cream-dark);margin-top:3rem}
+footer strong{color:var(--ink-light);font-weight:500}
+
+@media(max-width:520px){
+  .live-stats{grid-template-columns:repeat(2,1fr)}
+  .time-grid{grid-template-columns:repeat(3,1fr)}
+  .result-grid{grid-template-columns:repeat(2,1fr)}
+  .mode-grid{grid-template-columns:1fr}
+  .diff-grid{grid-template-columns:1fr}
+  .qp-settings{grid-template-columns:1fr}
+  .hero h1{font-size:1.65rem}
+  .timer-row{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Type<span>craft</span></div>
+  <div class="nav-hint">Timed typing practice</div>
+</nav>
+
+<main>
+
+<!-- ══════ HOME / UPLOAD ══════ -->
+<div id="screen-upload" class="screen active">
+  <div class="hero">
+    <div class="eyebrow">Typing practice</div>
+    <h1>Type from <em>your</em> own material</h1>
+    <p class="hero-sub">Upload a document, or jump straight into quick random practice.</p>
+  </div>
+
+  <!-- Tab switcher -->
+  <div class="home-tabs">
+    <button class="home-tab active" id="tab-doc" onclick="switchTab('doc')">
+      <span class="tab-icon">📄</span> My document
+    </button>
+    <button class="home-tab" id="tab-quick" onclick="switchTab('quick')">
+      <span class="tab-icon">⚡</span> Quick practice
+    </button>
+  </div>
+
+  <!-- ── Document panel ── -->
+  <div id="doc-panel">
+    <div class="card">
+      <label class="upload-zone" id="upload-zone">
+        <input type="file" id="file-input" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,image/*,application/pdf,text/plain">
+        <div class="uz-icon" id="upload-icon">📄</div>
+        <div>
+          <div class="uz-title" id="upload-title">Drop a file here, or click to browse</div>
+          <div class="uz-sub" id="upload-sub">Any document, textbook, or article</div>
+          <div class="format-pills"><span class="pill">PDF</span><span class="pill">PNG</span><span class="pill">JPG</span><span class="pill">WEBP</span><span class="pill">TXT</span></div>
+        </div>
+      </label>
+
+      <div class="or-line">or paste text</div>
+      <textarea class="paste-box" id="paste-input" placeholder="Paste paragraphs, questions, or any text you want to practice…" rows="3"></textarea>
+
+      <div class="mode-section">
+        <div class="sec-label">Typing mode</div>
+        <div class="mode-grid" id="mode-grid">
+          <div class="mode-card active" data-mode="raw"><span class="mc-dot"></span><span class="mc-title">Raw — as written</span><div class="mc-desc">Type exactly as it appears, symbols and all</div></div>
+          <div class="mode-card" data-mode="words"><span class="mc-dot"></span><span class="mc-title">Words only</span><div class="mc-desc">Letters and spaces — no numbers or punctuation</div></div>
+          <div class="mode-card" data-mode="words-numbers"><span class="mc-dot"></span><span class="mc-title">Words + numbers</span><div class="mc-desc">Letters, digits, spaces — punctuation stripped</div></div>
+          <div class="mode-card" data-mode="words-punctuation"><span class="mc-dot"></span><span class="mc-title">Words + punctuation</span><div class="mc-desc">Letters with , . ; : ! ? " ' ( ) — only</div></div>
+          <div class="mode-card" data-mode="words-numbers-punctuation"><span class="mc-dot"></span><span class="mc-title">Words + numbers + punct</span><div class="mc-desc">Everything except @#$%^& symbols</div></div>
+          <div class="mode-card" data-mode="commas-periods"><span class="mc-dot"></span><span class="mc-title">Commas &amp; periods focus</span><div class="mc-desc">Words with only , and . — rhythm training</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="upload-error"></div>
+    <div style="margin-top:.75rem">
+      <button class="btn btn-sage" id="continue-btn" disabled>Continue →</button>
+    </div>
+  </div>
+
+  <!-- ── Quick Practice panel ── -->
+  <div id="quick-panel" class="qp-panel">
+    <div class="card">
+      <p class="qp-intro">No file needed — just pick a difficulty, set your time, and go. A fresh random passage is generated every round.</p>
+
+      <div class="sec-label">Difficulty</div>
+      <div class="diff-grid">
+        <div class="diff-card active" data-diff="easy">
+          <div class="diff-icon">🌱</div>
+          <div class="diff-title">Easy</div>
+          <div class="diff-desc">Common short words, no punctuation</div>
+        </div>
+        <div class="diff-card" data-diff="medium">
+          <div class="diff-icon">🔥</div>
+          <div class="diff-title">Medium</div>
+          <div class="diff-desc">Mixed words with commas and periods</div>
+        </div>
+        <div class="diff-card" data-diff="hard">
+          <div class="diff-icon">⚡</div>
+          <div class="diff-title">Hard</div>
+          <div class="diff-desc">Longer words, numbers and full punctuation</div>
+        </div>
+      </div>
+
+      <div class="qp-settings">
+        <div class="qp-group">
+          <div class="sec-label">Duration</div>
+          <div class="qp-time-row">
+            <button class="qp-time-btn" data-qsecs="30">30s</button>
+            <button class="qp-time-btn active" data-qsecs="60">1 min</button>
+            <button class="qp-time-btn" data-qsecs="120">2 min</button>
+            <button class="qp-time-btn" data-qsecs="180">3 min</button>
+            <button class="qp-time-btn" data-qsecs="300">5 min</button>
+          </div>
+        </div>
+        <div class="qp-group">
+          <div class="sec-label">Words per round</div>
+          <div class="qp-len-row">
+            <button class="qp-len-btn" data-words="60">60</button>
+            <button class="qp-len-btn active" data-words="100">100</button>
+            <button class="qp-len-btn" data-words="150">150</button>
+            <button class="qp-len-btn" data-words="200">200</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="qp-preview-wrap">
+        <div class="qp-preview-label">Preview</div>
+        <div class="qp-preview-text" id="qp-preview">—</div>
+      </div>
+
+      <div class="qp-actions">
+        <button class="btn btn-indigo" id="qp-start-btn">Start quick practice →</button>
+        <button class="btn btn-secondary" id="qp-refresh-btn">↺ New text</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ LOADING ══════ -->
+<div id="screen-loading" class="screen">
+  <div class="card">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-title">Reading your file…</div>
+      <div class="loading-sub">Extracting text with AI — just a moment</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ SELECT (document mode only) ══════ -->
+<div id="screen-select" class="screen">
+  <div class="select-header">
+    <div>
+      <h2>Choose your passages</h2>
+      <p>Each passage is at least 60 words. Pick one or more — they run back to back.</p>
+    </div>
+    <button class="btn btn-secondary" id="back-btn">← Back</button>
+  </div>
+
+  <div class="file-chip" id="file-chip" style="display:none">
+    <span>📄</span><span class="fc-name" id="fc-name"></span><span class="fc-meta" id="fc-meta"></span>
+  </div>
+
+  <div class="hint-strip">✦ Click a passage to select or deselect it.</div>
+
+  <div class="toolbar">
+    <button class="btn btn-secondary" id="sel-all-btn" style="padding:6px 12px;font-size:13px">Select all</button>
+    <button class="btn btn-secondary" id="desel-all-btn" style="padding:6px 12px;font-size:13px">Clear</button>
+    <span class="count-tag" id="total-tag"></span>
+  </div>
+
+  <div class="chunks-list" id="chunks-list"></div>
+
+  <div class="time-section">
+    <div class="sec-label">Practice duration — choose your time</div>
+    <div class="time-grid">
+      <div class="time-btn" data-secs="30"><div class="t-val">30</div><div class="t-unit">sec</div></div>
+      <div class="time-btn active" data-secs="60"><div class="t-val">1</div><div class="t-unit">min</div></div>
+      <div class="time-btn" data-secs="120"><div class="t-val">2</div><div class="t-unit">min</div></div>
+      <div class="time-btn" data-secs="180"><div class="t-val">3</div><div class="t-unit">min</div></div>
+      <div class="time-btn" data-secs="300"><div class="t-val">5</div><div class="t-unit">min</div></div>
+    </div>
+    <div class="time-note">⏱ Timer starts on your first keystroke.</div>
+  </div>
+
+  <div class="start-bar">
+    <button class="btn btn-sage" id="go-btn" disabled>Start practice →</button>
+    <span class="sel-label" id="sel-count-label">0 passages selected</span>
+  </div>
+</div>
+
+<!-- ══════ PRACTICE ══════ -->
+<div id="screen-practice" class="screen">
+  <div class="practice-topbar">
+    <div class="logo-sm">Type<span>craft</span></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" id="back-to-sel-btn" style="padding:7px 13px;font-size:13px">← Back</button>
+      <button class="btn btn-secondary" id="new-file-btn" style="padding:7px 13px;font-size:13px">Home</button>
+    </div>
+  </div>
+
+  <div class="timer-row">
+    <div class="timer-ring-outer">
+      <svg width="88" height="88" viewBox="0 0 88 88">
+        <circle class="ring-track" cx="44" cy="44" r="39"/>
+        <circle class="ring-fill" id="ring-fill" cx="44" cy="44" r="39"/>
+      </svg>
+      <div class="ring-text">
+        <div class="ring-secs" id="ring-secs">—</div>
+        <div class="ring-lbl">left</div>
+      </div>
+    </div>
+    <div class="live-stats">
+      <div class="stat-box"><div class="sb-lbl">WPM</div><div class="sb-val" id="s-wpm">0</div></div>
+      <div class="stat-box"><div class="sb-lbl">Accuracy</div><div class="sb-val" id="s-acc">100</div><div class="sb-unit">%</div></div>
+      <div class="stat-box"><div class="sb-lbl">Words</div><div class="sb-val" id="s-words">0</div></div>
+      <div class="stat-box"><div class="sb-lbl">Errors</div><div class="sb-val" id="s-err">0</div></div>
+    </div>
+  </div>
+
+  <div class="prog-bar-wrap"><div class="prog-bar-fill" id="time-prog" style="width:100%"></div></div>
+
+  <div class="passage-meta">
+    <span class="p-badge" id="p-badge">Passage 1 / 1</span>
+    <span class="mode-chip" id="mode-chip">Raw</span>
+    <span class="time-chip" id="time-chip">1 min</span>
+    <span class="qp-chip" id="qp-chip" style="display:none">Quick practice</span>
+  </div>
+
+  <div id="time-up-banner" class="time-up-banner">⏱ Time's up! Showing your results…</div>
+
+  <div class="text-display" id="text-display"></div>
+
+  <textarea id="typing-box" placeholder="Start typing — the timer begins on your first keystroke…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+
+  <div class="key-hints"><span><kbd>Tab</kbd> next passage</span><span><kbd>Esc</kbd> restart</span></div>
+
+  <div class="practice-actions">
+    <button class="btn btn-secondary" id="retry-btn">↺ Restart session</button>
+  </div>
+</div>
+
+<!-- ══════ RESULT ══════ -->
+<div id="screen-result" class="screen">
+  <div class="result-wrap">
+    <div class="result-wpm" id="r-wpm">0</div>
+    <div class="result-wpm-lbl">words per minute</div>
+
+    <div class="result-badges">
+      <span class="rbadge rb-time" id="r-time-badge">1 min</span>
+      <span class="rbadge rb-mode" id="r-mode-badge">Raw</span>
+      <span class="rbadge rb-qp" id="r-qp-badge" style="display:none">Quick practice</span>
+    </div>
+
+    <div class="result-grid">
+      <div class="stat-box"><div class="sb-lbl">Accuracy</div><div class="sb-val" id="r-acc">0</div><div class="sb-unit">%</div></div>
+      <div class="stat-box"><div class="sb-lbl">Words typed</div><div class="sb-val" id="r-words">0</div></div>
+      <div class="stat-box"><div class="sb-lbl">Errors</div><div class="sb-val" id="r-err">0</div></div>
+      <div class="stat-box"><div class="sb-lbl">Chars typed</div><div class="sb-val" id="r-chars">0</div></div>
+    </div>
+
+    <div class="verdict-box">
+      <div class="verdict-lbl">How you did</div>
+      <div class="verdict-text" id="r-verdict"></div>
+    </div>
+
+    <div class="breakdown-section" id="breakdown-section" style="display:none">
+      <div class="breakdown-title">Top mistakes — characters you missed most</div>
+      <div class="breakdown-grid" id="breakdown-grid"></div>
+    </div>
+
+    <div class="result-actions" style="margin-top:1.5rem">
+      <button class="btn btn-sage" id="retry-same-btn">↺ Retry same</button>
+      <button class="btn btn-secondary" id="reselect-btn">← Change passages</button>
+      <button class="btn btn-secondary" id="new-file-btn2">Home</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<footer><strong>Typecraft</strong> — Practice typing from your own documents</footer>
+
+<script>
+/* ════════════════════════════════════════
+   WORD BANKS
+════════════════════════════════════════ */
+const WORDS = {
+  easy: ['the','be','to','of','and','a','in','that','have','it','for','not','on','with','he','as','you','do','at','this','but','his','by','from','they','we','say','her','she','or','an','will','my','one','all','would','there','their','what','so','up','out','if','about','who','get','which','go','me','when','make','can','like','time','no','just','him','know','take','people','into','year','your','good','some','could','them','see','other','than','then','now','look','only','come','its','over','think','also','back','after','use','two','how','our','work','first','well','way','even','new','want','because','any','these','give','day','most','us','great','old','life','hand','part','place','case','week','company','system','every','end','put','need','hold','far','real','small','run','big','still','both','while','down','side','been','said','each','set','last','school','house','food','water','play','find','long','turn','ask','left','move','try','kind','keep','love','live','help','start','never','before','feel','next','hard','open','seem','together','white','sea','door','body','music','color','story','point','south','early','mind','book','light','voice','power','town','fine','drive','human','five','bring','since','plan','once','build','young','true','top','word','above','called','through','where','change','again','form','little','best','cut','doing','nothing','going','having','made','most','right','same','such','tell','than','thing','think','together','until','upon','very','where','which','while','whose','within'],
+  medium: ['abstract','achieve','advance','balance','caption','capable','classic','collect','combine','comfort','compose','concept','conduct','confirm','content','context','control','convert','correct','counter','culture','declare','defense','deliver','despite','develop','display','distant','diverse','dynamic','element','engaged','enhance','examine','example','execute','exhibit','expand','expect','explore','express','extreme','factor','figure','filter','finish','format','forward','general','global','govern','granted','handle','impact','improve','include','income','inform','initial','insight','inspire','instead','involve','isolate','journal','justify','knowing','leading','limited','logical','manage','manner','matter','measure','message','method','minimal','mobile','monitor','narrow','notion','notice','object','observe','obtain','opinion','oppose','option','organize','output','overcome','pattern','perform','permit','popular','precise','prefer','prepare','present','prevent','primary','process','produce','project','promote','protect','provide','publish','purpose','quality','quantity','question','realize','receive','reduce','reform','refresh','report','require','resolve','respond','result','return','review','search','secure','select','series','simple','single','social','source','specific','status','strategy','subject','supply','support','target','through','toward','transfer','trigger','update','useful','various','virtual','visible','welcome'],
+  hard: ['abbreviate','accommodate','accomplish','acquisition','administration','algorithm','ambiguous','anticipate','approximately','architecture','authenticate','authorization','automatically','bureaucratic','chronological','circumference','classification','collaboration','commemorate','communication','comprehensive','configuration','consistently','contemporary','controversial','cryptocurrency','decomposition','deliberately','demonstration','deterioration','differentiate','disadvantage','disambiguation','documentation','ecclesiastical','electromagnetic','encapsulation','environment','exaggeration','extraordinary','functionality','gubernatorial','hierarchically','identification','implementation','inadvertently','inconsistently','infrastructure','initialization','instantiation','interdependency','investigation','juxtaposition','knowledgeable','lexicographic','manipulation','metamorphosis','microprocessor','multithreaded','nevertheless','nomenclature','optimization','orchestration','overabundance','parallelization','particularly','perpetuation','pharmaceutical','polymorphism','predominantly','preprocessing','prioritization','procedurally','productivity','proliferation','proportional','pseudorandom','quantitative','reconnaissance','reconfiguration','recursively','reinitialization','relationships','simultaneously','sophistication','specifications','subclassification','systematically','telecommunication','approximately','unconventional','undoubtedly','unfortunately','unidirectional','unprecedented','vulnerability','widespread','withdrawal','xenomorphic','acknowledgement']
+};
+
+const SENTENCES_MEDIUM = [
+  'The quick brown fox jumps over the lazy dog.',
+  'Practice makes perfect, but nobody is perfect.',
+  'Every expert was once a beginner who kept going.',
+  'Speed comes after accuracy, not before it.',
+  'Focus on the process, and the results will follow.',
+  'Small improvements every day lead to big results over time.',
+  'The best time to practice was yesterday, the second best time is now.',
+  'Consistency beats intensity in the long run.',
+];
+
+/* ════════════════════════════════════════
+   QUICK PRACTICE GENERATOR
+════════════════════════════════════════ */
+let qpDifficulty = 'easy';
+let qpSecs = 60;
+let qpWordCount = 100;
+let qpText = '';
+let isQuickPractice = false;
+
+function generateQPText(diff, count) {
+  const pool = WORDS[diff] || WORDS.easy;
+  const result = [];
+  let prev = '';
+  for (let i = 0; i < count; i++) {
+    let w;
+    do { w = pool[Math.floor(Math.random() * pool.length)]; } while (w === prev);
+    prev = w;
+    result.push(w);
+  }
+  let text = result.join(' ');
+  // For medium: sprinkle in some punctuation naturally
+  if (diff === 'medium') {
+    // insert commas and periods at roughly every 8–12 words
+    const ws = text.split(' ');
+    let out = [];
+    for (let i = 0; i < ws.length; i++) {
+      out.push(ws[i]);
+      const gap = 8 + Math.floor(Math.random() * 5);
+      if ((i + 1) % gap === 0 && i < ws.length - 1) {
+        const punct = Math.random() > 0.6 ? '.' : ',';
+        out[out.length - 1] += punct;
+      }
+    }
+    text = out.join(' ');
+    // occasionally capitalize after period
+    text = text.replace(/\. ([a-z])/g, (m, c) => '. ' + c.toUpperCase());
+  }
+  if (diff === 'hard') {
+    // add numbers and punctuation
+    const ws = text.split(' ');
+    const out = [];
+    for (let i = 0; i < ws.length; i++) {
+      let w = ws[i];
+      if (i > 0 && i % 15 === 0) w += ',';
+      else if (i > 0 && i % 30 === 0) w += '.';
+      if (i > 0 && i % 7 === 0) out.push(String(Math.floor(Math.random() * 9000) + 100));
+      out.push(w);
+    }
+    text = out.join(' ');
+    text = text.replace(/\. ([a-z])/g, (m, c) => '. ' + c.toUpperCase());
+  }
+  return text;
+}
+
+function refreshQPPreview() {
+  qpText = generateQPText(qpDifficulty, qpWordCount);
+  const preview = qpText.length > 120 ? qpText.slice(0, 120) + '…' : qpText;
+  document.getElementById('qp-preview').textContent = preview;
+}
+
+/* diff cards */
+document.querySelectorAll('.diff-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.diff-card').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    qpDifficulty = c.dataset.diff;
+    refreshQPPreview();
+  });
+});
+
+/* qp time buttons */
+document.querySelectorAll('.qp-time-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.qp-time-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    qpSecs = parseInt(b.dataset.qsecs);
+  });
+});
+
+/* qp word count */
+document.querySelectorAll('.qp-len-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.qp-len-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    qpWordCount = parseInt(b.dataset.words);
+    refreshQPPreview();
+  });
+});
+
+document.getElementById('qp-refresh-btn').onclick = refreshQPPreview;
+
+document.getElementById('qp-start-btn').onclick = () => {
+  isQuickPractice = true;
+  activeMode = 'raw';
+  chosenSecs = qpSecs;
+  if (!qpText) qpText = generateQPText(qpDifficulty, qpWordCount);
+  practiceQueue = [qpText];
+  startSession();
+};
+
+/* ════════════════════════════════════════
+   TAB SWITCHER
+════════════════════════════════════════ */
+function switchTab(tab) {
+  document.getElementById('tab-doc').classList.toggle('active', tab === 'doc');
+  document.getElementById('tab-quick').classList.toggle('active', tab === 'quick');
+  document.getElementById('doc-panel').style.display = tab === 'doc' ? 'block' : 'none';
+  const qp = document.getElementById('quick-panel');
+  if (tab === 'quick') { qp.classList.add('visible'); refreshQPPreview(); }
+  else qp.classList.remove('visible');
+}
+
+/* ════════════════════════════════════════
+   CONSTANTS & STATE
+════════════════════════════════════════ */
+const API = 'https://api.anthropic.com/v1/messages';
+const MIN_WORDS = 60;
+const CIRC = 2 * Math.PI * 39;
+
+let allChunks=[], selectedIdxs=[], practiceQueue=[], queuePos=0;
+let currentText='', typed='';
+let sessionStartTime=null, countdown=null, pendingFile=null;
+let activeMode='raw', chosenSecs=60, timeLeft=60, sessionDone=false;
+let totalErrors=0, totalCorrect=0, totalTyped=0, totalWords=0;
+let charStats={}, passageWordTotals=[];
+
+const modeLabels={'raw':'Raw','words':'Words only','words-numbers':'Words+nums','words-punctuation':'Words+punct','words-numbers-punctuation':'Words+nums+punct','commas-periods':'Commas & periods'};
+const diffLabels={'easy':'Easy','medium':'Medium','hard':'Hard'};
+
+/* ── ring ── */
+const ringFill = document.getElementById('ring-fill');
+ringFill.style.strokeDasharray = CIRC;
+ringFill.style.strokeDashoffset = 0;
+function setRing(frac) {
+  ringFill.style.strokeDashoffset = CIRC * (1 - frac);
+  ringFill.style.stroke = frac > 0.5 ? 'var(--sage)' : frac > 0.2 ? 'var(--amber)' : 'var(--rust)';
+}
+
+/* ── mode filter ── */
+function applyMode(text, mode) {
+  let t = text.replace(/\s+/g,' ').trim();
+  switch(mode) {
+    case 'words': return t.replace(/[^a-zA-Z\u00C0-\u024F\s]/g,'').replace(/\s+/g,' ').trim();
+    case 'words-numbers': return t.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g,'').replace(/\s+/g,' ').trim();
+    case 'words-punctuation': return t.replace(/[^a-zA-Z\u00C0-\u024F\s,\.;:!?\"\'\(\)\-\u2014]/g,'').replace(/\s+/g,' ').trim();
+    case 'words-numbers-punctuation': return t.replace(/[^a-zA-Z0-9\u00C0-\u024F\s,\.;:!?\"\'\(\)\-\u2014]/g,'').replace(/\s+/g,' ').trim();
+    case 'commas-periods': return t.replace(/[^a-zA-Z\u00C0-\u024F\s,\.]/g,'').replace(/\s+/g,' ').trim();
+    default: return t;
+  }
+}
+
+/* ── split chunks ── */
+function splitChunks(text) {
+  const cleaned = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  let paras = cleaned.split(/\n{2,}/).map(p=>p.replace(/\n/g,' ').replace(/\s+/g,' ').trim()).filter(p=>p.length>10);
+  const merged = []; let buf = '';
+  for (const p of paras) {
+    buf = buf ? buf+' '+p : p;
+    if (buf.trim().split(/\s+/).length >= MIN_WORDS) { merged.push(buf.trim()); buf = ''; }
+  }
+  if (buf.trim().split(/\s+/).length >= 30) merged.push(buf.trim());
+  if (merged.length > 0) return merged;
+  const words = cleaned.replace(/\s+/g,' ').trim().split(' ').filter(Boolean);
+  const chunks = [];
+  for (let i=0; i<words.length; i+=80) chunks.push(words.slice(i,i+80).join(' '));
+  return chunks.filter(c=>c.trim().split(/\s+/).length>=MIN_WORDS);
+}
+
+/* ── utils ── */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fmtTime(s){return s>=60?Math.floor(s/60)+'m'+(s%60?' '+s%60+'s':''):s+'s'}
+function wc(t){return t.trim().split(/\s+/).filter(Boolean).length}
+
+/* ── doc mode cards ── */
+document.querySelectorAll('#mode-grid .mode-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('#mode-grid .mode-card').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); activeMode=c.dataset.mode;
+  });
+});
+
+/* ── doc time buttons ── */
+document.querySelectorAll('.time-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.time-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); chosenSecs=parseInt(b.dataset.secs);
+  });
+});
+
+/* ── upload ── */
+const zone=document.getElementById('upload-zone');
+const fileInput=document.getElementById('file-input');
+zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag-over')});
+zone.addEventListener('dragleave',()=>zone.classList.remove('drag-over'));
+zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag-over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])handleFile(fileInput.files[0])});
+
+document.getElementById('paste-input').addEventListener('input',function(){
+  document.getElementById('continue-btn').disabled=this.value.trim().length<20;
+  if(this.value.trim().length>0) pendingFile=null;
+});
+
+function handleFile(file){
+  pendingFile=file;
+  document.getElementById('upload-icon').textContent=file.name.endsWith('.pdf')?'📑':file.type.startsWith('image')?'🖼️':'📄';
+  document.getElementById('upload-title').textContent=file.name;
+  document.getElementById('upload-sub').textContent=(file.size/1024).toFixed(0)+' KB — click to change';
+  document.getElementById('continue-btn').disabled=false;
+  document.getElementById('upload-error').innerHTML='';
+}
+
+document.getElementById('continue-btn').onclick=async()=>{
+  isQuickPractice=false;
+  const paste=document.getElementById('paste-input').value.trim();
+  if(paste.length>20&&!pendingFile){setupChunks(paste,'Pasted text',paste.length+' chars')}
+  else if(pendingFile){
+    if(pendingFile.type==='text/plain'||pendingFile.name.endsWith('.txt')){
+      const txt=await pendingFile.text();
+      setupChunks(txt,pendingFile.name,(pendingFile.size/1024).toFixed(0)+' KB');
+    }else await processFile(pendingFile);
+  }
+};
+
+function setupChunks(text,name,meta){
+  allChunks=splitChunks(text); selectedIdxs=[];
+  document.getElementById('fc-name').textContent=name;
+  document.getElementById('fc-meta').textContent=' · '+meta+' · '+allChunks.length+' passages';
+  document.getElementById('file-chip').style.display='inline-flex';
+  renderChunks(); show('select');
+}
+
+async function processFile(file){
+  show('loading');
+  try{
+    const b64=await toB64(file);
+    const isPDF=file.type==='application/pdf'||file.name.endsWith('.pdf');
+    const mt=isPDF?'application/pdf':(file.type||'image/jpeg');
+    const block=isPDF?{type:'document',source:{type:'base64',media_type:mt,data:b64}}:{type:'image',source:{type:'base64',media_type:mt,data:b64}};
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,
+        messages:[{role:'user',content:[block,{type:'text',text:'Extract all readable text. Return ONLY plain text. Separate paragraphs with a blank line. No commentary.'}]}]})});
+    const data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    const txt=data.content.map(b=>b.text||'').join('').trim();
+    if(!txt||txt.length<20) throw new Error('Could not extract readable text. Try a clearer image or paste the text directly.');
+    setupChunks(txt,file.name,(file.size/1024).toFixed(0)+' KB');
+  }catch(err){
+    show('upload');
+    document.getElementById('upload-error').innerHTML=`<div class="error-box">⚠ ${err.message}</div>`;
+  }
+}
+
+function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Read failed'));r.readAsDataURL(file)})}
+
+/* ── select screen ── */
+function renderChunks(){
+  const list=document.getElementById('chunks-list'); list.innerHTML='';
+  document.getElementById('total-tag').textContent=allChunks.length+' passages (min '+MIN_WORDS+' words each)';
+  allChunks.forEach((chunk,i)=>{
+    const words=wc(chunk);
+    const preview=chunk.length>190?chunk.slice(0,190)+'…':chunk;
+    const div=document.createElement('div'); div.className='chunk-card';
+    div.innerHTML=`<div class="ch-row"><span class="ch-num">Passage ${i+1}</span><span class="ch-meta">${words} words · ~${fmtTime(Math.round(words/40*60))} at avg speed</span></div><div class="ch-preview">${esc(preview)}</div><div class="ch-check"><svg viewBox="0 0 12 12"><polyline points="1.5,6 5,9.5 10.5,2.5"/></svg></div>`;
+    div.onclick=()=>toggleChunk(i,div);
+    list.appendChild(div);
+  });
+  updateSelCount();
+}
+
+function toggleChunk(i,el){
+  const idx=selectedIdxs.indexOf(i);
+  if(idx===-1){selectedIdxs.push(i);el.classList.add('selected')}
+  else{selectedIdxs.splice(idx,1);el.classList.remove('selected')}
+  updateSelCount();
+}
+function updateSelCount(){
+  document.getElementById('sel-count-label').textContent=selectedIdxs.length+' passage'+(selectedIdxs.length===1?'':'s')+' selected';
+  document.getElementById('go-btn').disabled=selectedIdxs.length===0;
+}
+
+document.getElementById('sel-all-btn').onclick=()=>{
+  selectedIdxs=allChunks.map((_,i)=>i);
+  document.querySelectorAll('.chunk-card').forEach(el=>el.classList.add('selected'));
+  updateSelCount();
+};
+document.getElementById('desel-all-btn').onclick=()=>{
+  selectedIdxs=[];
+  document.querySelectorAll('.chunk-card').forEach(el=>el.classList.remove('selected'));
+  updateSelCount();
+};
+document.getElementById('back-btn').onclick=resetAll;
+
+document.getElementById('go-btn').onclick=()=>{
+  practiceQueue=selectedIdxs.slice().sort((a,b)=>a-b)
+    .map(i=>applyMode(allChunks[i],activeMode)).filter(t=>t.trim().length>10);
+  startSession();
+};
+
+/* ════════════════════════════════════════
+   SESSION ENGINE
+════════════════════════════════════════ */
+function startSession(){
+  queuePos=0; typed='';
+  totalErrors=0; totalCorrect=0; totalTyped=0; totalWords=0;
+  charStats={}; passageWordTotals=[];
+  sessionStartTime=null; sessionDone=false; timeLeft=chosenSecs;
+  stopCountdown();
+  document.getElementById('ring-secs').textContent='—';
+  document.getElementById('time-up-banner').style.display='none';
+  setRing(1);
+  document.getElementById('time-prog').style.width='100%';
+  document.getElementById('time-chip').textContent=fmtTime(chosenSecs);
+  // QP chip
+  const qpChip=document.getElementById('qp-chip');
+  const qpBadge=document.getElementById('r-qp-badge');
+  if(isQuickPractice){
+    qpChip.style.display='inline-block';
+    qpChip.textContent=diffLabels[qpDifficulty]+' · Quick';
+    qpBadge.style.display='inline-block';
+    qpBadge.textContent=diffLabels[qpDifficulty]+' difficulty';
+  }else{
+    qpChip.style.display='none';
+    qpBadge.style.display='none';
+  }
+  loadPassage(0);
+}
+
+function loadPassage(pos){
+  if(pos>=practiceQueue.length){endSession();return}
+  if(pos>0) passageWordTotals.push(wc(currentText));
+  queuePos=pos; currentText=practiceQueue[pos]; typed='';
+  const tb=document.getElementById('typing-box');
+  tb.value=''; tb.disabled=sessionDone;
+  document.getElementById('p-badge').textContent=
+    isQuickPractice?'Quick practice':'Passage '+(pos+1)+' / '+practiceQueue.length;
+  document.getElementById('mode-chip').textContent=
+    isQuickPractice?'Random text':modeLabels[activeMode]||activeMode;
+  renderText();
+  document.getElementById('text-display').scrollTop=0;
+  show('practice');
+  if(!sessionDone) setTimeout(()=>tb.focus(),80);
+}
+
+function startCountdown(){
+  if(countdown) return;
+  sessionStartTime=Date.now();
+  countdown=setInterval(()=>{
+    const elapsed=Math.floor((Date.now()-sessionStartTime)/1000);
+    timeLeft=Math.max(0,chosenSecs-elapsed);
+    const frac=timeLeft/chosenSecs;
+    setRing(frac);
+    document.getElementById('ring-secs').textContent=timeLeft;
+    document.getElementById('time-prog').style.width=(frac*100)+'%';
+    updateLive();
+    if(timeLeft===0){stopCountdown();endSession()}
+  },500);
+}
+function stopCountdown(){if(countdown){clearInterval(countdown);countdown=null}}
+
+function endSession(){
+  sessionDone=true; stopCountdown();
+  const tb=document.getElementById('typing-box'); tb.disabled=true;
+  document.getElementById('time-up-banner').style.display='block';
+  setRing(0); document.getElementById('ring-secs').textContent='0';
+  setTimeout(showResult,1100);
+}
+
+function renderText(){
+  const d=document.getElementById('text-display');
+  let h='';
+  for(let i=0;i<currentText.length;i++){
+    const raw=currentText[i];
+    const ch=raw===' '?'&nbsp;':esc(raw);
+    if(i<typed.length) h+=typed[i]===raw?`<span class="c-done">${ch}</span>`:`<span class="c-wrong">${ch}</span>`;
+    else if(i===typed.length) h+=`<span class="c-cur c-pending">${ch}</span>`;
+    else h+=`<span class="c-pending">${ch}</span>`;
+  }
+  d.innerHTML=h;
+  const cur=d.querySelector('.c-cur');
+  if(cur){
+    const bt=d.scrollTop,bb=bt+d.clientHeight,et=cur.offsetTop,eb=et+cur.offsetHeight;
+    if(eb>bb) d.scrollTop=eb-d.clientHeight+20;
+    else if(et<bt) d.scrollTop=et-8;
+  }
+}
+
+function updateLive(){
+  const elapsed=sessionStartTime?(Date.now()-sessionStartTime)/1000:0;
+  const prevWords=passageWordTotals.reduce((a,b)=>a+b,0);
+  const curWords=wc(typed);
+  const wTotal=prevWords+curWords;
+  const wpm=elapsed>0?Math.round((wTotal/elapsed)*60):0;
+  const acc=totalTyped>0?Math.round((totalCorrect/totalTyped)*100):100;
+  document.getElementById('s-wpm').textContent=wpm;
+  document.getElementById('s-acc').textContent=acc;
+  document.getElementById('s-words').textContent=wTotal;
+  document.getElementById('s-err').textContent=totalErrors;
+  totalWords=wTotal;
+}
+
+document.getElementById('typing-box').addEventListener('input',function(){
+  if(sessionDone){this.value='';return}
+  if(!sessionStartTime) startCountdown();
+  const val=this.value; const prev=typed; typed=val;
+  if(val.length>prev.length){
+    const i=val.length-1;
+    const expected=currentText[i]||'';
+    const got=val[i];
+    totalTyped++;
+    if(!charStats[expected]) charStats[expected]={attempts:0,errors:0};
+    charStats[expected].attempts++;
+    if(got===expected) totalCorrect++;
+    else{totalErrors++;charStats[expected].errors++;}
+  }
+  renderText(); updateLive();
+  if(typed.length>=currentText.length&&!sessionDone){
+    // quick practice: loop with a fresh text instead of ending
+    if(isQuickPractice){
+      passageWordTotals.push(wc(typed));
+      const next=generateQPText(qpDifficulty,qpWordCount);
+      practiceQueue.push(next);
+    }
+    this.value=''; typed=currentText; renderText();
+    setTimeout(()=>loadPassage(queuePos+1),200);
+  }
+});
+
+document.getElementById('typing-box').addEventListener('keydown',function(e){
+  if(e.key==='Tab'){
+    e.preventDefault();
+    if(!sessionDone){passageWordTotals.push(wc(typed));loadPassage(queuePos+1)}
+  }
+  if(e.key==='Escape'){stopCountdown();countdown=null;sessionStartTime=null;passageWordTotals=[];startSession()}
+});
+
+document.getElementById('retry-btn').onclick=()=>{
+  if(isQuickPractice){qpText=generateQPText(qpDifficulty,qpWordCount);practiceQueue=[qpText]}
+  stopCountdown(); startSession();
+};
+document.getElementById('back-to-sel-btn').onclick=()=>{
+  stopCountdown();
+  if(isQuickPractice) resetAll();
+  else show('select');
+};
+document.getElementById('new-file-btn').onclick=resetAll;
+
+/* ── result ── */
+function showResult(){
+  const elapsed=sessionStartTime?(Date.now()-sessionStartTime)/1000:chosenSecs;
+  const usedSecs=Math.min(elapsed,chosenSecs);
+  const prevWords=passageWordTotals.reduce((a,b)=>a+b,0);
+  const finalWords=prevWords+wc(typed);
+  const wpm=usedSecs>0?Math.round((finalWords/usedSecs)*60):0;
+  const acc=totalTyped>0?Math.round((totalCorrect/totalTyped)*100):100;
+
+  document.getElementById('r-wpm').textContent=wpm;
+  document.getElementById('r-acc').textContent=acc;
+  document.getElementById('r-words').textContent=finalWords;
+  document.getElementById('r-err').textContent=totalErrors;
+  document.getElementById('r-chars').textContent=totalTyped;
+  document.getElementById('r-time-badge').textContent=fmtTime(chosenSecs)+' session';
+  document.getElementById('r-mode-badge').textContent=
+    isQuickPractice?'Random text':modeLabels[activeMode]||activeMode;
+
+  let v='';
+  if(wpm>=80) v='Excellent — professional-level speed!';
+  else if(wpm>=60) v='Great speed — above average. Focus on reducing errors to push WPM higher.';
+  else if(wpm>=40) v='Solid — comfortable everyday speed. Aim for consistency next round.';
+  else if(wpm>=20) v='Good start. Slow down slightly and focus on accuracy first — speed follows naturally.';
+  else v='Keep practicing. Every session builds muscle memory. Try a shorter time next.';
+  if(acc<85) v+=' Your accuracy needs work — aim to hit every character cleanly before going faster.';
+  else if(acc>=98) v+=' Outstanding accuracy!';
+  document.getElementById('r-verdict').textContent=v;
+
+  // breakdown
+  const bk=Object.entries(charStats).filter(([,s])=>s.errors>0).sort((a,b)=>b[1].errors-a[1].errors).slice(0,6);
+  if(bk.length>0){
+    document.getElementById('breakdown-section').style.display='block';
+    const grid=document.getElementById('breakdown-grid'); grid.innerHTML='';
+    bk.forEach(([ch,s])=>{
+      const a=Math.round(((s.attempts-s.errors)/s.attempts)*100);
+      const color=a<60?'var(--rust)':a<80?'var(--amber)':'var(--sage)';
+      const label=ch===' '?'space':ch==='\n'?'enter':ch;
+      grid.innerHTML+=`<div class="bk-card"><div class="bk-char">${esc(label)}</div><div class="bk-acc" style="color:${color}">${a}%</div><div class="bk-count">${s.errors} miss / ${s.attempts} hit</div></div>`;
+    });
+  }else{document.getElementById('breakdown-section').style.display='none'}
+
+  // update retry button in result
+  document.getElementById('retry-same-btn').textContent=isQuickPractice?'↺ New quick round':'↺ Retry same';
+  show('result');
+}
+
+document.getElementById('retry-same-btn').onclick=()=>{
+  stopCountdown();
+  if(isQuickPractice){qpText=generateQPText(qpDifficulty,qpWordCount);practiceQueue=[qpText]}
+  startSession();
+};
+document.getElementById('reselect-btn').onclick=()=>{
+  stopCountdown();
+  if(isQuickPractice) { show('upload'); switchTab('quick'); }
+  else show('select');
+};
+document.getElementById('new-file-btn2').onclick=resetAll;
+
+/* ── reset ── */
+function resetAll(){
+  stopCountdown();
+  allChunks=[];selectedIdxs=[];practiceQueue=[];queuePos=0;
+  currentText='';typed='';totalErrors=0;totalCorrect=0;totalTyped=0;totalWords=0;
+  charStats={};passageWordTotals=[];
+  sessionStartTime=null;sessionDone=false;timeLeft=60;pendingFile=null;
+  isQuickPractice=false;qpText='';
+  document.getElementById('paste-input').value='';
+  document.getElementById('file-input').value='';
+  document.getElementById('continue-btn').disabled=true;
+  document.getElementById('upload-error').innerHTML='';
+  document.getElementById('upload-icon').textContent='📄';
+  document.getElementById('upload-title').textContent='Drop a file here, or click to browse';
+  document.getElementById('upload-sub').textContent='Any document, textbook, or article';
+  document.getElementById('file-chip').style.display='none';
+  switchTab('doc');
+  show('upload');
+}
+</script>
+</body>
+</html>
